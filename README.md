@@ -20,31 +20,31 @@ The system diagram (`system_diagram.mmd`) breaks the app into four stages:
 ## Setup Instructions
 
 1. Clone the repo:
-   ```
-   git clone https://github.com/lolxd23/applied-ai-system-project-final.git
-   cd applied-ai-system-project-final
-   ```
+
+git clone https://github.com/lolxd23/applied-ai-system-project-final.git
+cd applied-ai-system-project-final
+
 2. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+
+pip install -r requirements.txt
+
 3. Get a free Gemini API key at [aistudio.google.com](https://aistudio.google.com) (click "Get API key").
 4. Create a `.env` file in the project root:
-   ```
-   echo 'GEMINI_API_KEY=your-key-here' > .env
-   ```
+
+echo 'GEMINI_API_KEY=your-key-here' > .env
+
 5. Run the app:
-   ```
-   streamlit run app.py
-   ```
+
+streamlit run app.py
+
 6. Run the tests:
-   ```
-   pytest
-   ```
+
+pytest
+
 7. (Optional) Run the live reliability check — makes real API calls, takes ~2 minutes:
-   ```
-   python reliability_check.py
-   ```
+
+python reliability_check.py
+
 
 ## Sample Interactions
 
@@ -68,7 +68,7 @@ The system diagram (`system_diagram.mmd`) breaks the app into four stages:
 
 - **Unit tests (11 total, all passing):** 7 original tests cover the core game logic (range selection, guess parsing, comparison, scoring). 4 new tests cover the AI guardrail logic (`expected_direction` and `hint_is_consistent`) using deterministic inputs — no live API calls, so they run instantly and reliably.
 - **What broke during development:** the originally chosen model (`gemini-2.5-flash`) was retired mid-project and had to be swapped for `gemini-flash-latest`. The free-tier daily quota (20 requests/day) was also exhausted during testing, which surfaced real `429 RESOURCE_EXHAUSTED` errors from the live API — and confirmed the fallback guardrail handled every one of them gracefully, with zero crashes and a clear log trail explaining exactly why each call failed.
-- **Live reliability results:** `[FILL IN TOMORROW — run `python reliability_check.py` once the daily quota resets and paste the final line here, e.g. "9/10 hints passed the consistency guardrail (90%)"]`
+- **Live reliability results:** Two reliability runs (10 trials each) produced 60% and 70% pass rates. Nearly all failures were traced via logging to Gemini's free-tier daily quota (20 requests/day) being exhausted mid-testing — not incorrect AI reasoning. A third run attempted the next day failed 0/10 for the same reason, confirming the quota resets on a longer cycle than expected. See `model_card.md` for the full evaluation table.
 
 ## Reflection
 
