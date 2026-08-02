@@ -1,0 +1,55 @@
+flowchart TD
+    subgraph Input["Input"]
+        A[Player types a guess, e.g. 42]
+    end
+
+    subgraph Process["Process"]
+        B[Validate guess: is it a number within the range, e.g. 1-100?]
+        C[Compare guess to the secret number]
+        D[Build AI prompt: guess, secret number, range, attempts left]
+        E[Send prompt to Gemini API]
+        F{Guardrail check: does the AI's Higher/Lower direction match the real comparison? Does the hint avoid revealing the secret number?}
+        G[Update score based on Win / Too High / Too Low]
+    end
+
+    subgraph Output["Output"]
+        H["Show AI Coach hint, e.g. Go higher, you are close!"]
+        I["Show plain fallback hint: Go Higher! / Go Lower!"]
+        J[Show updated score, attempts left, and win/loss result]
+    end
+
+    subgraph Testing["Testing and Reliability"]
+        K[pytest: game logic tests - guess validation, comparison, scoring]
+        L[pytest: AI guardrail tests - direction and leak checks]
+        M[reliability_check.py: runs many guesses through the AI and logs pass rate]
+        N[ai_coach.log: records every guess sent, hint received, and any errors]
+        O[Developer reviews test results and logs before shipping]
+    end
+
+    A --> B
+    B -- invalid guess --> A
+    B -- valid guess --> C
+    C --> D
+    D --> E
+    E -- API succeeds --> F
+    E -- API fails --> I
+    F -- hint is correct and safe --> H
+    F -- hint is wrong or leaks number --> I
+    H --> G
+    I --> G
+    G --> J
+
+    D -.-> N
+    F -.-> N
+    E -.-> N
+
+    K -.-> B
+    K -.-> C
+    K -.-> G
+    L -.-> F
+    M -.-> D
+    M -.-> N
+    O -.-> K
+    O -.-> L
+    O -.-> M
+    O -.-> N

@@ -1,7 +1,9 @@
 import random
 import streamlit as st
 
-#FIXME:LOGIC BREAKS HERE
+from ai_coach import get_ai_hint
+
+
 def get_range_for_difficulty(difficulty: str):
     if difficulty == "Easy":
         return 1, 50
@@ -12,7 +14,7 @@ def get_range_for_difficulty(difficulty: str):
     return 1, 100
 
 
-def parse_guess(raw: str):
+def parse_guess(raw: str, low: int = None, high: int = None):
     if raw is None:
         return False, None, "Enter a guess."
 
@@ -27,9 +29,13 @@ def parse_guess(raw: str):
     except Exception:
         return False, None, "That is not a number."
 
+    if low is not None and high is not None:
+        if value < low or value > high:
+            return False, None, f"Guess must be between {low} and {high}."
+
     return True, value, None
 
-# FIXME:LOGIC BREAKS HERE
+
 def check_guess(guess, secret):
     guess = int(guess)
     secret = int(secret)
@@ -48,8 +54,6 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
         return current_score + points
 
     if outcome == "Too High":
-        if attempt_number % 2 == 0:
-            return current_score + 5
         return current_score - 5
 
     if outcome == "Too Low":
@@ -57,10 +61,11 @@ def update_score(current_score: int, outcome: str, attempt_number: int):
 
     return current_score
 
+
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
 st.title("🎮 Game Glitch Investigator")
-st.caption("An AI-generated guessing game. Something is off.")
+st.caption("A guessing game with an AI-powered coach.")
 
 st.sidebar.header("Settings")
 
@@ -127,6 +132,8 @@ with col3:
 if new_game:
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(low, high)
+    st.session_state.status = "playing"
+    st.session_state.history = []
     st.success("New game started.")
     st.rerun()
 
@@ -140,7 +147,7 @@ if st.session_state.status != "playing":
 if submit:
     st.session_state.attempts += 1
 
-    ok, guess_int, err = parse_guess(raw_guess)
+    ok, guess_int, err = parse_guess(raw_guess, low, high)
 
     if not ok:
         st.session_state.history.append(raw_guess)
@@ -152,8 +159,13 @@ if submit:
 
         outcome, message = check_guess(guess_int, secret)
 
-        if show_hint:
-            st.warning(message)
+        if show_hint and outcome != "Win":
+            attempts_left = attempt_limit - st.session_state.attempts
+            ai_hint, _ = get_ai_hint(guess_int, secret, low, high, attempts_left)
+            if ai_hint:
+                st.warning(f"🤖 Coach: {ai_hint}")
+            else:
+                st.warning(message)
 
         st.session_state.score = update_score(
             current_score=st.session_state.score,
