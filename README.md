@@ -85,3 +85,4 @@ Building this with AI helping me made the harder parts go a lot faster especiall
 What actually surprised me was that the real failures weren't the AI being dumb they were just infrastructure stuff, like hitting a rate limit. That taught me that "does the AI work" isn't really the right question "does the whole system stay safe when the AI doesn't work" is the one that actually matters.
 
 I also learned I can't just accept every suggestion without checking it myself. At one point the AI coach code got changed to return two values instead of one, but the app code wasn't updated to match I only caught it because I actually tested it in the browser instead of assuming it was fine. If I kept building this out, I'd add retries before falling back, and fix the leak-check so it doesn't get confused by small numbers.
+test edit
